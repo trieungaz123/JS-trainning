@@ -1,5 +1,5 @@
 import { Row, Tag, Checkbox } from 'antd';
-import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 const priorityColorMapping = {
   High: 'red',
@@ -7,11 +7,24 @@ const priorityColorMapping = {
   Low: 'gray',
 };
 
-export default function Todo({ name, prioriry }) {
-  const [checked, setChecked] = useState(false);
+export default function Todo({ id, name, priority }) {
+  const dispatch = useDispatch();
+
+  // Get the complete todoList from Redux
+  const todoList = useSelector((state) => state.todoList);
+
+  // Get checked status directly from the todoList
+  const isChecked = todoList.find((task) => task.id === id)?.completed || false;
 
   const toggleCheckbox = () => {
-    setChecked(!checked);
+    // Dispatch an action to update checked status in Redux
+    dispatch({
+      type: 'todoList/CheckedTask',
+      payload: {
+        id: id,
+        checked: !isChecked, // Flip the current checked status
+      },
+    });
   };
 
   return (
@@ -19,14 +32,14 @@ export default function Todo({ name, prioriry }) {
       justify='space-between'
       style={{
         marginBottom: 3,
-        ...(checked ? { opacity: 0.5, textDecoration: 'line-through' } : {}),
+        ...(isChecked ? { opacity: 0.5, textDecoration: 'line-through' } : {}),
       }}
     >
-      <Checkbox checked={checked} onChange={toggleCheckbox}>
+      <Checkbox checked={isChecked} onChange={toggleCheckbox}>
         {name}
       </Checkbox>
-      <Tag color={priorityColorMapping[prioriry]} style={{ margin: 0 }}>
-        {prioriry}
+      <Tag color={priorityColorMapping[priority]} style={{ margin: 0 }}>
+        {priority}
       </Tag>
     </Row>
   );
